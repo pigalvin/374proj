@@ -16,7 +16,10 @@ void* getmem(uintptr_t size) {
     return NULL;
   }
   
-  // freelist = make_node(NULL, size);
+  if (size % 0xFF != 0) {
+    size = (size / 0xFF) * 0xFF + 0xFF;
+  }
+
   freeNode* nodeMem = (freeNode*) malloc(size + NODESIZE);
   totalmalloc = totalmalloc + size + NODESIZE;
   if (nodeMem == NULL) {
@@ -40,7 +43,7 @@ void* getmem(uintptr_t size) {
   // allocate new memory if size is too big
   if (size > newNode -> size || newNode == NULL) {
     newNode = (freeNode*)malloc(size + NODESIZE);
-    totalmalloc += size;
+    totalmalloc += size + NODESIZE;
     newNode -> size = size;
   }
 

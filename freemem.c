@@ -49,11 +49,6 @@ void freemem(void* p) {
       }
       node = node->next;
    }
-   // insert in the end of list
-   if (address > (uintptr_t)node) {
-      freeNode* insertedNode = makeNode(address,size,NULL);
-      node->next = insertedNode;
-   }
    // Combines the adjacent blocks.
    node = list;
    while (node->next) {

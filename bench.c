@@ -56,10 +56,7 @@ int main(int argc, char** argv ) {
   while (ntrials < NTRIALS) { 
     if (!(rand() % 100 + 1) <= PCTGET) {
       if (nblocks > 0) {
-        int index = 0;
-        if (nblocks > 1) {
-          index = rand() % (nblocks - 1);
-        }
+        int index = rand() % nblocks;
         // move the last pointer
         // make the size smaller
         freemem(blocks[index]);
@@ -83,6 +80,7 @@ int main(int argc, char** argv ) {
     }
     ntrials++;
   }
+  print_stats(start);
   return EXIT_SUCCESS;
 }
 

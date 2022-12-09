@@ -1,6 +1,5 @@
 # Makefile for mem memory system, CSE374 22WI
 
-
 CC = gcc
 CARGS = -Wall -std=c11
 
