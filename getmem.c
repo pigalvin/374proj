@@ -1,67 +1,98 @@
+/* getmem.c
+   implements getmem (malloc) for memory system
+   CSE 374 HW6
+*/
+
 #include <assert.h>
 #include "mem.h"
 #include "mem_impl.h"
 
-uintptr_t totalmalloc = 0;
-freeNode* freelist = NULL;
+/* This code will be filled in by the students.  Your primary job is to
+   implement getmem */
 
-/* helper functions mm_split will split a given block
-   into two blocks */
-void mm_split(freeNode* node, uintptr_t size);
+/* initialize global variables ?*/
+
+uintptr_t totalmalloc = BIGCHUNK;
+freeNode* list = NULL;
+const int SIZE = 16;
+
+/* Are there helper functions that only getmeme will need?  Declare here. */
 
 void* getmem(uintptr_t size);
 
+/* Define your functions below: */
+
 void* getmem(uintptr_t size) {
-  if (size < 0) {
+  /* make sure you return a pointer to the usable memory that
+     is at least 'size' bytes long.
+     To get you started we are 'stubbing in' a call that will
+     return a usable value.  You will replace this code. */
+
+  // if the size of sotrage for given pointer is 0
+  // return NULL
+  if (size <= 0) {
     return NULL;
-  }
-  
-  if (size % 0xFF != 0) {
-    size = (size / 0xFF) * 0xFF + 0xFF;
-  }
-
-  freeNode* nodeMem = (freeNode*) malloc(size + NODESIZE);
-  totalmalloc = totalmalloc + size + NODESIZE;
-  if (nodeMem == NULL) {
-    freelist = NULL;
-  } else {
-    nodeMem -> size = size;
-    nodeMem -> next = NULL;
-    freelist = nodeMem;
-  }
-
-  freeNode* newNode = NULL;
-  freeNode* current = freelist;
-
-  while (current != NULL) {
-    if (current -> size >= MINCHUNK) {
-      newNode = current;
-    }
-    current = current -> next;
   } 
 
-  // allocate new memory if size is too big
-  if (size > newNode -> size || newNode == NULL) {
-    newNode = (freeNode*)malloc(size + NODESIZE);
-    totalmalloc += size + NODESIZE;
-    newNode -> size = size;
+  // initialize the free list
+  if (list == NULL) {
+    list = malloc(BIGCHUNK);
+    list -> next = NULL;
+    list -> size = 16000-16;
   }
 
-  // mm_split node if blocks are too large
-  if (newNode -> size >= (size + NODESIZE + MINCHUNK)) {
-    mm_split(newNode, size);
+  void* pointer = NULL;
+  freeNode* previous = NULL;
+  freeNode* current = list;
+  const int MEMOSIZE = (size / 16 + 1) * 16;
+  const int INCREASE = 8000;
+
+  // reach the end of the list
+  while (current->size < MEMOSIZE && current->next != NULL) {
+    previous = current;
+    current = current->next;
   }
 
-  uintptr_t addr = (uintptr_t) newNode + NODESIZE;
-  return (void*)addr;
-}
+  // if the end of the list has no enough space that is greater than 32
+  // increase the size of the space
+  if (current -> size < MEMOSIZE + 32 && current -> next == NULL) {
+    freeNode* more = malloc(INCREASE + MEMOSIZE);
+    totalmalloc = totalmalloc + (uintptr_t)(INCREASE + MEMOSIZE);
+    more -> next = NULL;
+    more -> size = INCREASE + MEMOSIZE - SIZE;
+    current -> next = more;
+  }
 
-// mm_split can mm_split a too large block into two smaller one
-void mm_split(freeNode* node, uintptr_t size) {
-  freeNode* newNode = (freeNode*)((uintptr_t)(node) + size + NODESIZE);
-  newNode -> next = node -> next;
-  newNode -> size = node -> size - (size + NODESIZE);
-  node -> next = newNode;
-  node -> size = size;
+  // get the remain space in the list
+  int space = current -> size - MEMOSIZE;
+  
+  // if the remain space is greater than 32
+  // split it
+  if (space >= 32) {
+    freeNode* split = (uintptr_t)current + SIZE + MEMOSIZE;
+    split -> size = current -> size - SIZE - MEMOSIZE;
+    split -> next = current -> next;
+    
+    pointer = (uintptr_t)current + SIZE;
+    current -> size = MEMOSIZE;
+    
+    if (previous == NULL) {
+      list = split;
+    } else {
+      previous -> next = split;
+    }
+  } else {
+    // if the remain space is less than 32
+    // add it
+    pointer = (uintptr_t)current + SIZE;
+    
+    if (previous == NULL) {
+      list = current -> next;
+    } else {
+      previous -> next = current -> next;
+    }
+  }
+
+  return pointer;
 }
 

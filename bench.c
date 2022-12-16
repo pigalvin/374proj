@@ -54,9 +54,12 @@ int main(int argc, char** argv ) {
   /* Students will fill in this section according to the assignment
      specs.*/
   while (ntrials < NTRIALS) { 
-    if (!(rand() % 100 + 1) <= PCTGET) {
+    if (!rand() % 100 <= PCTGET) {
       if (nblocks > 0) {
-        int index = rand() % nblocks;
+        int index = 0;
+        if (nblocks > 1) {
+          index = rand() % (nblocks - 1);
+        }
         // move the last pointer
         // make the size smaller
         freemem(blocks[index]);
@@ -64,15 +67,16 @@ int main(int argc, char** argv ) {
         nblocks--;
       }
     } else {
+      int useLarge = rand() % 100 <= PCTLARGE;
       void* location = NULL;
       
       // check if the usage is small
-      if (!(rand() % 100 + 1) <= PCTLARGE) {
-        location = getmem((uintptr_t)(rand() % SMALL_L) + 1);
-        fill_mem(location, (uintptr_t)(rand() % SMALL_L + 1));
+      if (!useLarge) {
+        location = getmem((uintptr_t)(rand() % SMALL_L));
+        fill_mem(location, (uintptr_t)(rand() % SMALL_L));
       } else {
-        location = getmem((uintptr_t)(rand() % (LARGE_L - SMALL_L) + SMALL_L + 1));
-        fill_mem(location, (uintptr_t)(rand() % (LARGE_L - SMALL_L) + SMALL_L + 1));
+        location = getmem((uintptr_t)(rand() % (LARGE_L - SMALL_L) + SMALL_L));
+        fill_mem(location, (uintptr_t)(rand() % (LARGE_L - SMALL_L) + SMALL_L));
       }
 
       blocks[nblocks] = location;
@@ -80,7 +84,6 @@ int main(int argc, char** argv ) {
     }
     ntrials++;
   }
-  print_stats(start);
   return EXIT_SUCCESS;
 }
 

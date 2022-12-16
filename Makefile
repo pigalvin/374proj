@@ -1,5 +1,6 @@
 # Makefile for mem memory system, CSE374 22WI
 
+
 CC = gcc
 CARGS = -Wall -std=c11
 
@@ -9,27 +10,22 @@ all: bench
 bench: bench.o getmem.o freemem.o mem_utils.o
 	$(CC) $(CARGS) -o bench $^
 
-# The executable
-$(TARGET): bench.o mem_utils.o memory.o
-	$(CC) $(CFLAGS) -g -o bench bench.o mem_utils.o getmem.o freemem.o
+# object files
+# fill in your individual object targets here
 
-# Individual source files
-bench.o: bench.c mem.h mem_impl.h
-	$(CC) $(CFLAGS) -g -c bench.c
+clint:
+	python2 clint.py memory.c
 
-mem_utils.o: mem_utils.c mem.h mem_impl.h
-	$(CC) $(CFLAGS) -g -c mem_utils.c
+# You can use these examples for other types of builds
+# make sure you know what they do.
+noassert: CARGS += -D NDEBUG
+noassert: bench
 
-getmem.o: getmem.c mem.h mem_impl.h
-	$(CC) $(CFLAGS) -g -c getmem.c
+debug: CARGS += -g
+debug: bench
 
-freemem.o: freemem.c mem.h mem_impl.h
-	$(CC) $(CFLAGS) -g -c freemem.c
+test: debug
+	./bench 10 50
 
-
-test: bench
-	./bench
-
-# A "phony" target to remove built files and backups
 clean:
-	rm -f *.o bench *~
+	rm -f bench *.o *~ 
